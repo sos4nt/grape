@@ -165,6 +165,19 @@ describe Grape::Validations::ParamsScope do
 
       expect(last_response.status).to eq(200)
     end
+
+    it do
+      subject.params do
+        requires :foo, as: :baz, type: Hash do
+          requires :bar, as: :qux
+        end
+      end
+      subject.get('/alias-nested') { "#{params.to_json}-#{declared(params).to_json}" }
+      get '/alias-nested', foo: { bar: 'any' }
+
+      expect(last_response.status).to eq(200)
+      expect(last_response.body).to eq('{"baz":{"qux":"any"}}-{"baz":{"qux":"any"}}')
+    end
   end
 
   context 'array without coerce type explicitly given' do
